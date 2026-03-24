@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SafeGuard AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep:  #040c18;
+      --bg-mid:   #071425;
+      --bg-card:  #0d1f35;
+      --bg-input: #0a1928;
+      --border:   #1a3050;
+      --blue:     #3b82f6;
+      --blue-lt:  #60a5fa;
+      --red:      #ef4444;
+      --green:    #22c55e;
+      --amber:    #f59e0b;
+      --text-1:   #e2eaf5;
+      --text-2:   #8baabf;
+      --text-3:   #4d6b84;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg-deep);
+      color: var(--text-1);
+      overflow: hidden;
+    }
+
+    .app {
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* --- SIDEBAR --- */
+    .sidebar {
+      width: 290px;
+      min-width: 290px;
+      background: var(--bg-mid);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .logo-area {
+      padding: 24px 20px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo-icon {
+      width: 42px; height: 42px;
+      background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      margin-bottom: 10px;
+      box-shadow: 0 0 18px rgba(59,130,246,0.3);
+    }
+
+    .logo-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 19px;
+      color: var(--text-1);
+    }
+
+    .logo-name span { color: var(--blue-lt); }
+    .logo-tag { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+
+    /* Emergency Banner */
+    .emer-box {
+      margin: 14px;
+      background: rgba(239,68,68,0.08);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+
+    .emer-title {
+      font-size: 10px; font-weight: 700;
+      color: var(--red);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    .dot {
+      width: 6px; height: 6px;
+      background: var(--red);
+      border-radius: 50%;
+      animation: blink 1.5s infinite;
+    }
+
+    @keyframes blink {
+      0%,100% { opacity:1; } 50% { opacity:0.3; }
+    }
+
+    .emer-row {
+      display: flex; justify-content: space-between;
+      font-size: 12.5px; padding: 3px 0;
+    }
+
+    .emer-row .lbl { color: var(--text-2); }
+    .emer-row .num {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700; color: var(--text-1);
+      letter-spacing: 1px;
+    }
+
+    /* Quick Actions */
+    .sec-label {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 1.8px; text-transform: uppercase;
+      color: var(--text-3); padding: 14px 20px 6px;
+    }
+
+    .actions { padding: 0 10px 10px; display: flex; flex-direction: column; gap: 5px; }
+
+    .qa {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 10px;
+      border: 1px solid transparent;
+      background: transparent; cursor: pointer;
+      text-align: left; color: var(--text-2);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px; transition: all 0.2s;
+    }
+
+    .qa:hover {
+      background: var(--bg-card);
+      border-color: var(--border);
+      color: var(--text-1);
+      transform: translateX(3px);
+    }
+
+    .qa-ic {
+      width: 30px; height: 30px; min-width: 30px;
+      border-radius: 8px; font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .qa.red  .qa-ic { background: rgba(239,68,68,0.12); }
+    .qa.blue .qa-ic { background: rgba(59,130,246,0.12); }
+    .qa.grn  .qa-ic { background: rgba(34,197,94,0.12); }
+    .qa.amb  .qa-ic { background: rgba(245,158,11,0.12); }
+    .qa.pur  .qa-ic { background: rgba(168,85,247,0.12); }
+
+    /* SDG */
+    .sdg-area {
+      margin: 10px 14px 16px;
+      border-top: 1px solid var(--border);
+      padding-top: 14px;
+    }
+    .sdg-lbl { font-size: 10px; font-weight: 600; letter-spacing: 1.8px; text-transform: uppercase; color: var(--text-3); margin-bottom: 7px; }
+    .sdg-badges { display: flex; flex-wrap: wrap; gap: 5px; }
+    .badge { padding: 3px 9px; border-radius: 20px; font-size: 10px; font-weight: 600; border: 1px solid; }
+    .b5  { color: #fb923c; border-color: rgba(251,146,60,0.3); background: rgba(251,146,60,0.07); }
+    .b16 { color: #38bdf8; border-color: rgba(56,189,248,0.3); background: rgba(56,189,248,0.07); }
+    .b3  { color: #4ade80; border-color: rgba(74,222,128,0.3); background: rgba(74,222,128,0.07); }
+
+    /* --- CHAT MAIN --- */
+    .chat-main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+
+    .chat-head {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--bg-mid); flex-shrink: 0;
+    }
+
+    .head-left { display: flex; align-items: center; gap: 10px; }
+
+    .ai-av {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, #1d4ed8, #06b6d4);
+      border-radius: 50%; font-size: 17px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 14px rgba(59,130,246,0.3);
+    }
+
+    .ai-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700; font-size: 14px;
+    }
+
+    .ai-stat {
+      display: flex; align-items: center; gap: 4px;
+      font-size: 11.5px; color: var(--green);
+    }
+
+    .s-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; }
+    .ai-badge { padding: 4px 11px; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.25); border-radius: 20px; font-size: 11.5px; color: var(--blue-lt); }
+
+    /* Messages */
+    .msgs {
+      flex: 1; overflow-y: auto;
+      padding: 22px 24px;
+      display: flex; flex-direction: column; gap: 18px;
+    }
+
+    .msgs::-webkit-scrollbar { width: 4px; }
+    .msgs::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    /* Welcome */
+    .welcome {
+      background: linear-gradient(135deg, rgba(59,130,246,0.07), rgba(6,182,212,0.04));
+      border: 1px solid rgba(59,130,246,0.18);
+      border-radius: 18px; padding: 26px; text-align: center;
+      animation: up 0.5s ease both;
+    }
+
+    @keyframes up {
+      from { opacity:0; transform:translateY(14px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    .welcome .big { font-size: 40px; margin-bottom: 12px; }
+    .welcome h2 { font-family:'Syne',sans-serif; font-weight:800; font-size:19px; margin-bottom:7px; }
+    .welcome p { font-size:13.5px; color:var(--text-2); line-height:1.6; max-width:460px; margin:0 auto 18px; }
+
+    .chips { display:flex; flex-wrap:wrap; gap:7px; justify-content:center; }
+    .chip {
+      padding: 7px 14px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 20px; font-size: 12.5px; color: var(--text-2);
+      cursor: pointer; transition: all 0.2s;
+    }
+    .chip:hover { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.35); color: var(--blue-lt); }
+
+    /* Message bubbles */
+    .msg { display:flex; gap:10px; animation: up 0.3s ease both; }
+    .msg.user { flex-direction: row-reverse; }
+
+    .m-av {
+      width: 32px; height: 32px; min-width: 32px;
+      border-radius: 50%; font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+      align-self: flex-end; flex-shrink: 0;
+    }
+
+    .msg.user .m-av { background: linear-gradient(135deg,#1d4ed8,#3b82f6); }
+    .msg.ai   .m-av { background: linear-gradient(135deg,#0f766e,#06b6d4); box-shadow: 0 0 8px rgba(6,182,212,0.2); }
+
+    .bwrap { display:flex; flex-direction:column; max-width:72%; }
+    .msg.user .bwrap { align-items: flex-end; }
+
+    .bubble {
+      padding: 12px 16px; border-radius: 17px;
+      font-size: 14px; line-height: 1.65; word-break: break-word;
+    }
+
+    .msg.user .bubble { background: linear-gradient(135deg,#1d4ed8,#2563eb); color:#fff; border-bottom-right-radius:5px; }
+    .msg.ai   .bubble { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-1); border-bottom-left-radius:5px; }
+
+    .bubble strong { color: var(--blue-lt); }
+    .mtime { font-size:11px; color:var(--text-3); margin-top:4px; padding:0 3px; }
+
+    /* Typing */
+    .typing { display:flex; gap:10px; align-items:flex-end; }
+    .t-bub {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 17px; border-bottom-left-radius:5px;
+      padding: 14px 18px; display:flex; gap:4px; align-items:center;
+    }
+    .tdot {
+      width:6px; height:6px; background:var(--text-3); border-radius:50%;
+      animation: bounce 1.2s ease-in-out infinite;
+    }
+    .tdot:nth-child(2) { animation-delay:.15s; }
+    .tdot:nth-child(3) { animation-delay:.3s; }
+    @keyframes bounce { 0%,60%,100%{transform:translateY(0);opacity:.4;} 30%{transform:translateY(-6px);opacity:1;} }
+
+    /* Input */
+    .input-area {
+      padding: 14px 24px 18px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-mid); flex-shrink: 0;
+    }
+
+    .in-row { display:flex; gap:8px; align-items:flex-end; }
+
+    .in-wrap {
+      flex:1; background: var(--bg-input);
+      border: 1px solid var(--border); border-radius: 13px;
+      padding: 12px 14px; transition: border-color 0.2s;
+      display:flex; align-items:center;
+    }
+
+    .in-wrap:focus-within { border-color: rgba(59,130,246,0.45); box-shadow: 0 0 0 3px rgba(59,130,246,0.07); }
+
+    #uInput {
+      flex:1; background:none; border:none; outline:none;
+      color:var(--text-1); font-family:'DM Sans',sans-serif;
+      font-size:14px; resize:none; line-height:1.5; max-height:110px;
+    }
+
+    #uInput::placeholder { color:var(--text-3); }
+
+    .send {
+      width:44px; height:44px; min-width:44px;
+      background: linear-gradient(135deg,#1d4ed8,#3b82f6);
+      border:none; border-radius:11px; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      color:white; font-size:17px; transition:all 0.2s;
+      box-shadow: 0 3px 12px rgba(59,130,246,0.3);
+    }
+
+    .send:hover:not(:disabled) { transform:translateY(-2px); box-shadow: 0 5px 18px rgba(59,130,246,0.4); }
+    .send:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+
+    .hint { font-size:11px; color:var(--text-3); margin-top:7px; text-align:center; }
+
+    @media(max-width:768px) { .sidebar { display:none; } }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo-area">
+      <div class="logo-icon">🛡️</div>
+      <div class="logo-name">Safe<span>Guard</span> AI</div>
+      <div class="logo-tag">Your personal safety companion</div>
+    </div>
+
+    <div class="emer-box">
+      <div class="emer-title"><span class="dot"></span> Emergency Numbers</div>
+      <div class="emer-row"><span class="lbl">Nigeria Emergency</span><span class="num">199</span></div>
+      <div class="emer-row"><span class="lbl">Police</span><span class="num">112</span></div>
+      <div class="emer-row"><span class="lbl">Lagos State</span><span class="num">767</span></div>
+      <div class="emer-row"><span class="lbl">NEEM Helpline</span><span class="num">0800-033-3333</span></div>
+    </div>
+
+    <div class="sec-label">Quick Actions</div>
+    <div class="actions">
+      <button class="qa red" onclick="quick('I am in immediate danger. What should I do?')">
+        <div class="qa-ic">🚨</div> Emergency Guidance
+      </button>
+      <button class="qa blue" onclick="quick('Give me personal safety tips for women in Nigeria')">
+        <div class="qa-ic">💡</div> Safety Tips
+      </button>
+      <button class="qa grn" onclick="quick('How do I report a crime to authorities in Nigeria?')">
+        <div class="qa-ic">📋</div> Report an Incident
+      </button>
+      <button class="qa amb" onclick="quick('I experienced something traumatic. I need mental health support')">
+        <div class="qa-ic">💚</div> Mental Wellness
+      </button>
+      <button class="qa pur" onclick="quick('How do I stay safe online and protect my privacy?')">
+        <div class="qa-ic">🔒</div> Cyber Safety
+      </button>
+      <button class="qa blue" onclick="quick('What are my legal rights as a woman in Nigeria?')">
+        <div class="qa-ic">⚖️</div> Know Your Rights
+      </button>
+    </div>
+
+    <div class="sdg-area">
+      <div class="sdg-lbl">UN SDG Alignment</div>
+      <div class="sdg-badges">
+        <span class="badge b5">SDG 5 — Gender Equality</span>
+        <span class="badge b16">SDG 16 — Peace & Justice</span>
+        <span class="badge b3">SDG 3 — Good Health</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CHAT -->
+  <main class="chat-main">
+    <header class="chat-head">
+      <div class="head-left">
+        <div class="ai-av">🛡️</div>
+        <div>
+          <div class="ai-name">SafeGuard AI</div>
+          <div class="ai-stat"><span class="s-dot"></span> Always available</div>
+        </div>
+      </div>
+      <div class="ai-badge">🤖 AI Powered</div>
+    </header>
+
+    <div class="msgs" id="msgs">
+      <div class="welcome" id="wc">
+        <div class="big">🛡️</div>
+        <h2>Welcome to SafeGuard AI</h2>
+        <p>Your intelligent personal safety companion. Ask me anything about personal safety, emergencies, legal rights, cyber safety, or mental wellness — available 24/7.</p>
+        <div class="chips">
+          <div class="chip" onclick="quick('How can I stay safe walking alone at night?')">🌙 Night safety</div>
+          <div class="chip" onclick="quick('What should I do if I am being followed?')">🚶 Being followed</div>
+          <div class="chip" onclick="quick('How do I protect myself from online harassment?')">💻 Online safety</div>
+          <div class="chip" onclick="quick('What are signs of a dangerous situation?')">👁️ Danger signs</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <div class="in-row">
+        <div class="in-wrap">
+          <textarea id="uInput" rows="1"
+            placeholder="Ask me anything about personal safety…"
+            onkeydown="handleKey(event)"
+            oninput="resize(this)"></textarea>
+        </div>
+        <button class="send" id="sendBtn" onclick="send()">➤</button>
+      </div>
+      <div class="hint">Enter to send · Shift+Enter for new line</div>
+    </div>
+  </main>
+
+</div>
+
+<script>
+  let history = [];
+  let busy = false;
+
+  function time() {
+    return new Date().toLocaleTimeString('en-NG', { hour:'2-digit', minute:'2-digit' });
+  }
+
+  function resize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 110) + 'px';
+  }
+
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+  }
+
+  function quick(text) {
+    document.getElementById('uInput').value = text;
+    send();
+  }
+
+  function addMsg(role, text) {
+    const area = document.getElementById('msgs');
+    const wc = document.getElementById('wc');
+    if (wc) wc.remove();
+
+    const isUser = role === 'user';
+    const d = document.createElement('div');
+    d.className = `msg ${isUser ? 'user' : 'ai'}`;
+
+    const fmt = text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\n/g, '<br>');
+
+    d.innerHTML = `
+      <div class="m-av">${isUser ? '👤' : '🛡️'}</div>
+      <div class="bwrap">
+        <div class="bubble">${fmt}</div>
+        <div class="mtime">${time()}</div>
+      </div>`;
+
+    area.appendChild(d);
+    area.scrollTop = area.scrollHeight;
+  }
+
+  function showTyping() {
+    const area = document.getElementById('msgs');
+    const d = document.createElement('div');
+    d.id = 'typing';
+    d.className = 'typing';
+    d.innerHTML = `
+      <div class="m-av" style="background:linear-gradient(135deg,#0f766e,#06b6d4);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;">🛡️</div>
+      <div class="t-bub">
+        <div class="tdot"></div><div class="tdot"></div><div class="tdot"></div>
+      </div>`;
+    area.appendChild(d);
+    area.scrollTop = area.scrollHeight;
+  }
+
+  function hideTyping() {
+    const t = document.getElementById('typing');
+    if (t) t.remove();
+  }
+
+  async function send() {
+    const inp = document.getElementById('uInput');
+    const btn = document.getElementById('sendBtn');
+    const text = inp.value.trim();
+    if (!text || busy) return;
+
+    inp.value = '';
+    inp.style.height = 'auto';
+    busy = true;
+    btn.disabled = true;
+
+    addMsg('user', text);
+    history.push({ role: 'user', content: text });
+    showTyping();
+
+    try {
+      const res = await fetch('/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: history })
+      });
+      const data = await res.json();
+      hideTyping();
+
+      if (data.error) {
+        addMsg('ai', '⚠️ Something went wrong. If you are in an emergency, call **112** immediately.');
+      } else {
+        history.push({ role: 'assistant', content: data.response });
+        addMsg('ai', data.response);
+      }
+    } catch {
+      hideTyping();
+      addMsg('ai', '⚠️ Connection error. In an emergency, call **112** (Police) or **199** (National Emergency).');
+    }
+
+    busy = false;
+    btn.disabled = false;
+    inp.focus();
+  }
+</script>
+</body>
+</html>
+```
+
+---
+
+## 📁 Your Folder Structure
+
+When typing all files, set them up exactly like this:
+```
+safeguard-ai/
+│
+├── app.py
+├── requirements.txt
+├── .env
+│
+└── templates/
+    └── index.html
