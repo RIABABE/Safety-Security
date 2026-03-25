@@ -10,44 +10,39 @@ app = Flask(__name__)
 def index():
     return render_template("index.html")
 
-@app.route("/safety-chat")
+@app.route('/safety-chat')
 def safety_chat():
-    return render_template("safeher_live.html")
+    return render_template('safeher_live.html')
 
-@app.route("/api/chat", methods=["POST"])
-@app.route("/chat", methods=["POST"])
+@app.route('/api/chat', methods=['POST'])
 def chat():
     try:
         data = request.get_json()
+        if not data or "messages" not in data:
+            return jsonify({"error": "Missing messages"}), 400
+
         response = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions",
+            'https://api.anthropic.com/v1/messages',
             headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
-                "HTTP-Referer": "http://localhost:5000",
-                "X-Title": "SafeGuard AI"
+                'Content-Type': 'application/json',
+                'x-api-key': os.getenv('ANTHROPIC_API_KEY'),
+                'anthropic-version': '2023-06-01'
             },
             json={
-                "model": "mistralai/mistral-7b-instruct:free",
-                "messages": [
-                    {
-                        "role": "system",
-                        "content": data.get("system", "You are SafeHer, a compassionate personal safety assistant for women in Nigeria. Give detailed, helpful, specific answers about personal safety, mental health, legal rights, and emergency support.")
-                    }
-                ] + data.get("messages", [])
+                'model': 'claude-sonnet-4-20250514',
+                'max_tokens': 1000,
+                'system': data.get('system'),
+                'messages': data.get('messages')
             }
         )
-        result = response.json()
-        reply = result["choices"][0]["message"]["content"]
-        return jsonify({
-            "content": [{"text": reply}]
-        })
+        return jsonify(response.json())
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 @app.route("/health")
 def health():
-    return jsonify({"status": "ok"}), 200
+    return jsonify({"status": "ok", "message": "SafeHer AI is running"}), 200
 
 if __name__ == "__main__":
     app.run(debug=True, host="127.0.0.1", port=5000)
