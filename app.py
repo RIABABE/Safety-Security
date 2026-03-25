@@ -1,37 +1,10 @@
-import dotenv
-from flask import Flask, render_template, request, jsonify
-import anthropic
-import os
-from dotenv import load_dotenv
-import flask
+from tkinter.filedialog import Open
+from tkinter.messagebox import IGNORE
 
-load_dotenv()
+from flask import Flask, render_template, request, jsonify
+import os
 
 app = Flask(__name__)
-
-client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-
-SYSTEM_PROMPT = """You are SafeGuard AI, a compassionate, calm, and highly knowledgeable personal safety assistant built specifically for women and vulnerable individuals in Nigeria and across Africa.
-
-Your core responsibilities:
-1. EMERGENCY GUIDANCE: When someone is in immediate danger, give clear, numbered, actionable steps first. Always mention Nigerian emergency numbers: Police 112, National Emergency 199, Lagos State 767.
-2. PERSONAL SAFETY TIPS: Provide practical, Nigeria-specific safety advice for everyday situations.
-3. INCIDENT REPORTING: Guide users through how to report crimes, harassment, or violence to Nigerian authorities.
-4. MENTAL WELLNESS: Offer empathetic support and coping strategies for trauma and distress.
-5. CYBER SAFETY: Advise on protecting personal information and handling online harassment.
-6. LEGAL RIGHTS: Explain relevant Nigerian laws protecting women (VAPP Act) in simple language.
-
-Tone guidelines:
-- Be warm, calm, and non-judgmental at all times
-- In emergencies: be direct, numbered, clear
-- Use simple, accessible English
-- Show empathy before giving advice when someone is distressed
-
-Formatting:
-- Use short paragraphs and numbered steps for clarity
-- Bold key actions using **bold**
-- Keep responses focused and actionable"""
-
 
 @app.route("/")
 def index():
@@ -42,20 +15,25 @@ def index():
 def chat():
     try:
         data = request.get_json()
-        messages = data.get("messages", [])
+        if not data or "messages" not in data:
+            return jsonify({"error": "Missing 'messages' in request"}), 400
 
-        if not messages:
-            return jsonify({"error": "No messages provided"}), 400
+        # Example dummy AI response (you’ll plug in Anthropic later)
+        user_message = data["messages"][-1]["content"]
 
-        response = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=1000,
-            system=SYSTEM_PROMPT,
-            messages=messages
+        reply = (
+            "This is a test reply from your safety assistant.\n\n"
+            "If you are in immediate danger:\n"
+            "- Try to move to a safe, visible place (e.g., shop, police post, filling station).\n"
+            "- Call 112 (Police) or 199 (National Emergency) and clearly state your location.\n"
+            "- Share your live location with a trusted contact via WhatsApp or Telegram.\n\n"
+            "If you are not in immediate danger, still document what happened and consider reaching out to support services."
         )
 
-        ai_reply = response.content[0].text
-        return jsonify({"response": ai_reply})
+        return jsonify({
+            "response": reply.strip(),
+            "timestamp": "now"
+        })
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -63,23 +41,45 @@ def chat():
 
 @app.route("/health")
 def health():
-    return jsonify({"status": "SafeGuard AI is running"})
+    return jsonify({"status": "ok", "message": "SafeGuard AI is running"}), 200
+
+@app.route('/safety-chat')
+def safety_chat():
+    return render_template('safeher_live.html')
+
+import os
+import requests
+from flask import Flask, render_template, request, jsonify
+from dotenv import load_dotenv
+
+load_dotenv()
+app = Flask(__name__)
+
+@app.route('/safety-chat')
+def safety_chat():
+    return render_template('safeher_live.html')
+
+@app.route('/api/chat', methods=['POST'])
+def chat():
+    data = request.get_json()
+    
+    response = requests.post(
+        'https://api.anthropic.com/v1/messages',
+        headers={
+            'Content-Type': 'application/json',
+            'x-api-key': os.getenv('ANTHROPIC_API_KEY'),
+            'anthropic-version': '2023-06-01'
+        },
+        json={
+            'model': 'claude-sonnet-4-20250514',
+            'max_tokens': 1000,
+            'system': data.get('system'),
+            'messages': data.get('messages')
+        }
+    )
+    
+    return jsonify(response.json())
 
 
 if __name__ == "__main__":
-    print("SafeGuard AI is starting...")
-    print("Open your browser: http://localhost:5000")
-    app.run(debug=True, host="0.0.0.0", port=5000)
-
-
-
-## 📄 FILE 2: `requirements.txt`
-flask==3.0
-anthropic==0.34
-python-dotenv==1.0
-
-
-
-
-## 📄 FILE 3: `.env` (Create this file, never share it publicly)
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
+    app.run(debug=True, host="127.0.0.1", port=5000)

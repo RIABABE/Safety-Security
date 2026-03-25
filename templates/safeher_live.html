@@ -1,0 +1,486 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SafeHer</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080d1a;
+  --surface: #0f1729;
+  --surface2: #162038;
+  --accent: #8b5cf6;
+  --accent2: #22d3ee;
+  --danger: #f87171;
+  --safe: #34d399;
+  --text: #f0f4ff;
+  --muted: #7c8db5;
+  --border: rgba(255,255,255,0.06);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: relative;
+}
+/* Ambient glow */
+.glow1 {
+  position: fixed; top: -150px; left: -100px;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 65%);
+  pointer-events: none; z-index: 0;
+}
+.glow2 {
+  position: fixed; bottom: -100px; right: -100px;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(34,211,238,0.07) 0%, transparent 65%);
+  pointer-events: none; z-index: 0;
+}
+ 
+/* Header */
+.header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 18px;
+  background: rgba(15,23,41,0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  z-index: 10; flex-shrink: 0;
+}
+.logo-wrap {
+  width: 38px; height: 38px;
+  background: linear-gradient(135deg, #8b5cf6 0%, #22d3ee 100%);
+  border-radius: 11px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.header h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: 15px; font-weight: 800;
+  letter-spacing: -0.3px;
+}
+.status-pill {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; color: var(--safe); font-weight: 500;
+}
+.dot { width: 6px; height: 6px; background: var(--safe); border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+.sos-btn {
+  margin-left: auto;
+  padding: 6px 13px;
+  background: rgba(248,113,113,0.12);
+  border: 1px solid rgba(248,113,113,0.25);
+  border-radius: 8px;
+  color: #fca5a5;
+  font-family: 'Syne', sans-serif;
+  font-size: 11px; font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+.sos-btn:hover { background: rgba(248,113,113,0.22); }
+ 
+/* Chips */
+.chips {
+  display: flex; gap: 7px;
+  padding: 10px 14px;
+  overflow-x: auto; scrollbar-width: none;
+  background: rgba(15,23,41,0.6);
+  border-bottom: 1px solid var(--border);
+  z-index: 5; flex-shrink: 0;
+}
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  flex-shrink: 0;
+  padding: 6px 13px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--muted);
+  font-size: 12px; font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s;
+}
+.chip:hover {
+  border-color: rgba(139,92,246,0.45);
+  color: var(--text);
+  background: rgba(139,92,246,0.1);
+}
+ 
+/* Messages */
+.msgs {
+  flex: 1; overflow-y: auto;
+  padding: 16px 14px;
+  display: flex; flex-direction: column; gap: 14px;
+  scroll-behavior: smooth;
+  z-index: 1; position: relative;
+}
+.msgs::-webkit-scrollbar { width: 3px; }
+.msgs::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+ 
+.row { display: flex; gap: 9px; animation: fadeUp 0.3s ease; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+.row.user { flex-direction: row-reverse; }
+ 
+.av {
+  width: 30px; height: 30px;
+  border-radius: 9px;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; align-self: flex-end;
+}
+.av.bot { background: linear-gradient(135deg, #8b5cf6, #22d3ee); }
+.av.user { background: linear-gradient(135deg, #4f46e5, #8b5cf6); font-family:'Syne',sans-serif; font-size:10px; font-weight:800; color:#fff; }
+ 
+.bbl {
+  max-width: 80%;
+  padding: 11px 15px;
+  border-radius: 15px;
+  font-size: 13.5px;
+  line-height: 1.65;
+}
+.bbl.bot {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 4px;
+}
+.bbl.user {
+  background: linear-gradient(135deg, #8b5cf6, #4f46e5);
+  border-bottom-right-radius: 4px;
+  color: #fff;
+}
+.bbl .ts { font-size: 10px; color: var(--muted); margin-top: 5px; display: block; opacity: 0.6; }
+.bbl.user .ts { color: rgba(255,255,255,0.45); }
+ 
+/* Bot message formatting */
+.bbl.bot b, .bbl.bot strong { color: #c4b5fd; font-weight: 600; }
+.bbl.bot .sec { font-family:'Syne',sans-serif; font-weight:700; font-size:12.5px; color:#c4b5fd; display:block; margin:10px 0 4px; }
+.bbl.bot ul { padding-left: 15px; margin: 5px 0; }
+.bbl.bot li { margin: 3px 0; color: #bfcfe8; }
+.bbl.bot .hotline {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(34,211,238,0.08);
+  border: 1px solid rgba(34,211,238,0.18);
+  padding: 3px 9px; border-radius: 5px;
+  font-size: 12.5px; color: var(--accent2); font-weight: 600;
+}
+.bbl.bot .warn {
+  background: rgba(248,113,113,0.07);
+  border-left: 3px solid var(--danger);
+  padding: 7px 11px;
+  border-radius: 0 7px 7px 0;
+  margin: 7px 0; font-size: 13px; color: #fca5a5;
+}
+ 
+/* Typing */
+.typing-bbl { display:flex; gap:5px; padding: 13px 15px; }
+.typing-bbl span {
+  width: 7px; height: 7px;
+  background: var(--muted); border-radius: 50%;
+  animation: bonce 1.2s infinite;
+}
+.typing-bbl span:nth-child(2) { animation-delay:.2s; }
+.typing-bbl span:nth-child(3) { animation-delay:.4s; }
+@keyframes bonce { 0%,80%,100% { transform:translateY(0); opacity:.4; } 40% { transform:translateY(-6px); opacity:1; } }
+ 
+/* Disclaimer */
+.disc { text-align:center; font-size:10.5px; color:var(--muted); padding:5px 14px; opacity:0.55; flex-shrink:0; z-index:1; }
+ 
+/* Input */
+.input-wrap {
+  padding: 10px 14px 14px;
+  background: rgba(15,23,41,0.95);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  z-index: 10; flex-shrink: 0;
+}
+.input-box {
+  display: flex; gap: 9px; align-items: flex-end;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 9px 11px;
+  transition: border-color 0.2s;
+}
+.input-box:focus-within { border-color: rgba(139,92,246,0.45); }
+textarea {
+  flex: 1; background: none; border: none; outline: none;
+  color: var(--text); font-family: 'DM Sans', sans-serif;
+  font-size: 13.5px; resize: none; max-height: 90px; line-height: 1.5;
+}
+textarea::placeholder { color: var(--muted); }
+.send {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, #8b5cf6, #4f46e5);
+  border: none; border-radius: 9px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 15px; transition: all 0.18s;
+}
+.send:hover { transform: scale(1.06); }
+.send:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+ 
+/* SOS modal */
+.modal {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75);
+  z-index: 200; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal.open { display: flex; }
+.modal-card {
+  background: var(--surface);
+  border: 1px solid rgba(248,113,113,0.2);
+  border-radius: 18px; padding: 24px 20px;
+  max-width: 320px; width: 100%;
+  animation: slideUp 0.28s ease;
+}
+@keyframes slideUp { from { transform:translateY(25px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+.modal-card h2 { font-family:'Syne',sans-serif; font-size:16px; color:#fca5a5; margin-bottom:14px; }
+.em-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(248,113,113,0.07);
+  border: 1px solid rgba(248,113,113,0.12);
+  border-radius: 10px; margin-bottom: 8px;
+}
+.em-lbl { font-size: 11px; color: var(--muted); }
+.em-num { font-family:'Syne',sans-serif; font-size: 19px; font-weight:800; color:#fca5a5; }
+.close-modal {
+  width:100%; margin-top:12px; padding:11px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--muted); cursor: pointer;
+  font-family:'DM Sans',sans-serif; font-size:13px;
+}
+.close-modal:hover { color: var(--text); }
+ 
+/* Welcome */
+.welcome { text-align:center; padding:28px 16px; animation: fadeUp 0.5s ease; }
+.welcome .wi { font-size:44px; margin-bottom:14px; }
+.welcome h2 { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; margin-bottom:7px; }
+.welcome p { color:var(--muted); font-size:13px; line-height:1.65; max-width:260px; margin:0 auto; }
+</style>
+</head>
+<body>
+ 
+<div class="glow1"></div>
+<div class="glow2"></div>
+ 
+<!-- Header -->
+<div class="header">
+  <div class="logo-wrap">🛡️</div>
+  <div>
+    <h1>SafeHer Assistant</h1>
+    <div class="status-pill"><div class="dot"></div> Always available</div>
+  </div>
+  <button class="sos-btn" onclick="document.getElementById('modal').classList.add('open')">🚨 SOS</button>
+</div>
+ 
+<!-- Quick chips -->
+<div class="chips">
+  <button class="chip" onclick="sendQ('Give me detailed personal safety tips for women in Nigeria')">🇳🇬 Safety Tips</button>
+  <button class="chip" onclick="sendQ('I experienced something traumatic and I need mental health support')">💚 Mental Health</button>
+  <button class="chip" onclick="sendQ('How do I safely escape an abusive relationship in Nigeria?')">🚪 Escape Abuse</button>
+  <button class="chip" onclick="sendQ('What are the legal rights of women in Nigeria?')">⚖️ Legal Rights</button>
+  <button class="chip" onclick="sendQ('What should I do if someone is following me?')">👁️ Being Followed</button>
+  <button class="chip" onclick="sendQ('How can I stay safe travelling alone at night in Nigeria?')">🌙 Night Safety</button>
+  <button class="chip" onclick="sendQ('What are Nigerian hotlines for women in danger?')">📞 Hotlines</button>
+</div>
+ 
+<!-- Messages -->
+<div class="msgs" id="msgs">
+  <div class="welcome">
+    <div class="wi">🛡️</div>
+    <h2>You are safe here.</h2>
+    <p>Ask me anything about personal safety, mental health, legal rights, or emergency support. I'm always here for you.</p>
+  </div>
+</div>
+ 
+<div class="disc">AI support only — call 112 immediately if you are in danger</div>
+ 
+<!-- Input -->
+<div class="input-wrap">
+  <div class="input-box">
+    <textarea id="inp" rows="1" placeholder="Ask me anything about personal safety…"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();go()}"
+      oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,90)+'px'"></textarea>
+    <button class="send" id="sendbtn" onclick="go()">➤</button>
+  </div>
+</div>
+ 
+<!-- SOS Modal -->
+<div class="modal" id="modal">
+  <div class="modal-card">
+    <h2>🚨 Emergency Numbers — Nigeria</h2>
+    <div class="em-row"><div><div class="em-lbl">Nigeria Police</div><div class="em-num">112</div></div><span style="font-size:22px">👮</span></div>
+    <div class="em-row"><div><div class="em-lbl">National Emergency</div><div class="em-num">199</div></div><span style="font-size:22px">🚑</span></div>
+    <div class="em-row"><div><div class="em-lbl">NAPTIP (Trafficking/Abuse)</div><div class="em-num">0800-NAPTIP</div></div><span style="font-size:22px">🛡️</span></div>
+    <div class="em-row"><div><div class="em-lbl">WARIF Rape Crisis (Lagos)</div><div class="em-num">08000-WARIF</div></div><span style="font-size:22px">💜</span></div>
+    <button class="close-modal" onclick="document.getElementById('modal').classList.remove('open')">✕ Close</button>
+  </div>
+</div>
+ 
+<script>
+const SYSTEM = `You are SafeHer, a warm and deeply knowledgeable personal safety assistant for women in Nigeria and Africa.
+ 
+Your role is to give DETAILED, SPECIFIC, HELPFUL answers — never generic. Every response must be tailored and thorough.
+ 
+Topics you cover:
+1. Personal safety tips specific to Nigeria (streets, transport, markets, campuses, etc.)
+2. Mental health and trauma support — always validate feelings first, then give practical help
+3. Legal rights for Nigerian women (VAPP Act, CEDAW, police reports, restraining orders)
+4. Abuse and relationship safety — how to safely leave, document evidence, find shelters
+5. Emergency resources: Police 112, National Emergency 199, NAPTIP 0800-NAPTIP, WARIF Lagos 08000-WARIF, CLEEN Foundation, Project Alert Nigeria
+6. Night safety, travel safety, online safety
+7. How to identify danger signs and trust your instincts
+ 
+RESPONSE RULES:
+- Always be warm, empathetic, non-judgmental
+- Give DETAILED responses with real, actionable steps (minimum 150 words per answer)
+- Use clear sections and bullet points
+- Include specific Nigerian organisations, laws, and hotlines where relevant
+- For mental health queries: open with emotional validation, then give practical steps and resources
+- For emergency/danger queries: put the most urgent action FIRST
+- End every response with an encouraging closing message
+- Use markdown: **bold** for important points, bullet lists for steps, ## for section titles
+ 
+You are NOT a replacement for emergency services. Always remind users to call 112 in immediate danger.`;
+ 
+let history = [];
+let busy = false;
+ 
+function ts() {
+  return new Date().toLocaleTimeString('en-NG',{hour:'2-digit',minute:'2-digit'});
+}
+ 
+function fmt(text) {
+  return text
+    .replace(/##\s(.+)/g, '<span class="sec">$1</span>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/^[-•]\s(.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>')
+    .replace(/<\/ul>\s*<ul>/g, '')
+    .replace(/\n\n/g, '<br><br>')
+    .replace(/\n/g, '<br>')
+    .replace(/\b(112|199|0800-NAPTIP|08000-WARIF)\b/g, '<span class="hotline">📞 $1</span>');
+}
+ 
+function addMsg(role, text) {
+  const box = document.getElementById('msgs');
+  const w = box.querySelector('.welcome');
+  if (w) w.remove();
+ 
+  const row = document.createElement('div');
+  row.className = `row ${role}`;
+ 
+  const av = document.createElement('div');
+  av.className = `av ${role}`;
+  av.textContent = role === 'bot' ? '🛡️' : 'ME';
+ 
+  const bbl = document.createElement('div');
+  bbl.className = `bbl ${role}`;
+  if (role === 'bot') bbl.innerHTML = fmt(text);
+  else bbl.textContent = text;
+ 
+  const t = document.createElement('span');
+  t.className = 'ts';
+  t.textContent = ts();
+  bbl.appendChild(t);
+ 
+  row.appendChild(av);
+  row.appendChild(bbl);
+  box.appendChild(row);
+  box.scrollTop = box.scrollHeight;
+}
+ 
+function showTyping() {
+  const box = document.getElementById('msgs');
+  const row = document.createElement('div');
+  row.className = 'row bot'; row.id = 'typing';
+  const av = document.createElement('div');
+  av.className = 'av bot'; av.textContent = '🛡️';
+  const bbl = document.createElement('div');
+  bbl.className = 'bbl bot typing-bbl';
+  bbl.innerHTML = '<span></span><span></span><span></span>';
+  row.appendChild(av); row.appendChild(bbl);
+  box.appendChild(row);
+  box.scrollTop = box.scrollHeight;
+}
+ 
+function removeTyping() {
+  const t = document.getElementById('typing');
+  if (t) t.remove();
+}
+ 
+async function go() {
+  if (busy) return;
+  const inp = document.getElementById('inp');
+  const text = inp.value.trim();
+  if (!text) return;
+ 
+  inp.value = ''; inp.style.height = 'auto';
+  document.getElementById('sendbtn').disabled = true;
+  busy = true;
+ 
+  addMsg('user', text);
+  history.push({ role: 'user', content: text });
+  showTyping();
+ 
+    try {
+
+      const res = await fetch('/api/chat', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    system: SYSTEM,
+    messages: history
+  })
+})
+    } catch(e) {;
+    const data = await res.json();
+    removeTyping();
+    const reply = data?.content?.[0]?.text || "I'm sorry, something went wrong. Please try again.";
+    history.push({ role: 'assistant', content: reply });
+    addMsg('bot', reply);
+  } catch(e) {
+    removeTyping();
+    addMsg('bot', "I'm having trouble connecting. If you are in immediate danger, please call **112** right away. Try again in a moment.");
+  }
+ 
+  busy = false;
+  document.getElementById('sendbtn').disabled = false;
+  document.getElementById('inp').focus();
+}
+ 
+function sendQ(q) {
+  document.getElementById('inp').value = q;
+  go();
+}
+ 
+// Welcome message
+setTimeout(() => {
+  addMsg('bot', `**Welcome to SafeHer** 💜
+ 
+I'm your personal safety assistant, available 24/7 to support you with:
+ 
+## What I can help with
+- 🛡️ **Personal safety tips** tailored for Nigeria
+- 💚 **Mental health & trauma support** — you are not alone
+- ⚖️ **Legal rights** for women under Nigerian law
+- 🚨 **Emergency numbers** and organisations that can help
+ 
+**Tap any button above** to get started, or type your question below. Everything you share here is safe and private.
+ 
+*If you are in immediate danger right now — call **112** immediately.*`);
+}, 400);
+</script>
+</body>
+</html>
+ 
