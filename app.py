@@ -15,24 +15,33 @@ def safety_chat():
     return render_template("safeher_live.html")
 
 @app.route("/api/chat", methods=["POST"])
+@app.route("/chat", methods=["POST"])
 def chat():
     try:
         data = request.get_json()
         response = requests.post(
-            "https://api.anthropic.com/v1/messages",
+            "https://openrouter.ai/api/v1/chat/completions",
             headers={
                 "Content-Type": "application/json",
-                "x-api-key": os.getenv("ANTHROPIC_API_KEY"),
-                "anthropic-version": "2023-06-01"
+                "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
+                "HTTP-Referer": "http://localhost:5000",
+                "X-Title": "SafeGuard AI"
             },
             json={
-                "model": "claude-sonnet-4-20250514",
-                "max_tokens": 1000,
-                "system": data.get("system"),
-                "messages": data.get("messages")
+                "model": "mistralai/mistral-7b-instruct:free",
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": data.get("system", "You are SafeHer, a compassionate personal safety assistant for women in Nigeria. Give detailed, helpful, specific answers about personal safety, mental health, legal rights, and emergency support.")
+                    }
+                ] + data.get("messages", [])
             }
         )
-        return jsonify(response.json())
+        result = response.json()
+        reply = result["choices"][0]["message"]["content"]
+        return jsonify({
+            "content": [{"text": reply}]
+        })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
